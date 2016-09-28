@@ -39,22 +39,25 @@ package object scalashop {
 
   /** Computes the blurred RGBA value of a single pixel of the input image. */
   def boxBlurKernel(src: Img, x: Int, y: Int, radius: Int): RGBA = {
-    val minX = clamp(x - radius, 0, src.width)
-    val maxX = clamp(x + radius, 0, src.width)
-    val minY = clamp(y - radius, 0, src.height)
-    val maxY = clamp(y + radius, 0, src.height)
+    val minX = clamp(x - radius, 0, src.width-1)
+    val maxX = clamp(x + radius, 0, src.width-1)
+    val minY = clamp(y - radius, 0, src.height-1)
+    val maxY = clamp(y + radius, 0, src.height-1)
 
     // get the RGBA of the pixels in radius
     val pixelsRGBA = 
       for {
-        i <- (minX to maxX)
-        j <- (minY to maxY) 
-      } yield src(i, j)
+        x <- (minX to maxX)
+        y <- (minY to maxY) 
+      } yield {
+        Console println s"(${x}, ${y})"
+        src(x, y)
+      }
 
     // get the cumulative value of each rgba element for the selected pixels 
     val (r, g, b, a) = pixelsRGBA.foldLeft(0, 0, 0, 0) { 
-        case ((sumR, sumG, sumB, sumA), rgba) =>
-          (sumR + red(rgba), sumG + green(rgba), sumB + blue(rgba), sumA + alpha(rgba))
+      case ((sumR, sumG, sumB, sumA), rgba) =>
+        (sumR + red(rgba), sumG + green(rgba), sumB + blue(rgba), sumA + alpha(rgba))
     }
 
     val count = pixelsRGBA.size
@@ -64,6 +67,18 @@ package object scalashop {
   }
 
   def main(args: Array[String]): Unit = {
-    boxBlurKernel(new Img(5, 5), 5, 2, 1)
+    val width = 32
+    val numTasks = 5
+
+    val isDivisor = width%numTasks == 0
+
+    val step = if (isDivisor) width/numTasks else width/numTasks + 1
+    val test = (0 to width) by step
+
+    Console println test.zip {
+      if (isDivisor) test.tail
+      else (test.tail ++ (width to width))
+    }
+
   }
 }
