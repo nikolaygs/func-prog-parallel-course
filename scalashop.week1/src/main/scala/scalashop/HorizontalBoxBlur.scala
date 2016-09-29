@@ -19,7 +19,7 @@ object HorizontalBoxBlurRunner {
     val src = new Img(width, height)
     val dst = new Img(width, height)
     val seqtime = standardConfig measure {
-      HorizontalBoxBlur.blur(src, dst, 0, height, radius, false)
+      HorizontalBoxBlur.blur(src, dst, 0, height, radius)
     }
     println(s"sequential blur time: $seqtime ms")
 
@@ -41,16 +41,11 @@ object HorizontalBoxBlur {
    *
    *  Within each row, `blur` traverses the pixels by going from left to right.
    */
-  def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int, print: Boolean = false): Unit = {
+  def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
     for {
       y <- (from until end)
       x <- (0 until src.width)
-    } {
-      if (print)
-        Console println s"Task#${from} modifies (${x}, ${y})"
-
-      dst(x, y) = boxBlurKernel(src, x, y, radius)
-    }
+    } dst(x, y) = boxBlurKernel(src, x, y, radius)
   }
 
   /** Blurs the rows of the source image in parallel using `numTasks` tasks.
@@ -60,38 +55,8 @@ object HorizontalBoxBlur {
    *  rows.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-    Console println "======================================================="
-    assert(numTasks > 0, "numTasks must be at least 1")
-
-    val isDivisor = src.height % numTasks == 0
-
-    val step = if (isDivisor) src.height / numTasks else src.height / numTasks + 1
-    val beginIndeces = (0 to src.height) by step
-    
-    val chunks = beginIndeces zip {
-      if (isDivisor) beginIndeces.tail
-      else (beginIndeces.tail ++ (src.height to src.height))
-    }
-
-    Console println s"${chunks}"
-    val tasks = chunks.tail map {
-      case (from, end) => {
-//        Console println s"Starting new task: ${from} to ${end}"
-        task {
-          blur(src, dst, from, end, radius)
-        }
-      }
-    }
-
-    // compute the 'head' element in this thread
-    val (from, end) = chunks.head
-    Console println s"Starting new task: ${from} to ${end}"
-    blur(src, dst, from, end, radius, true)
-
-    // join the remaining ones
-    tasks foreach { _.join() }
-    Console println "======================================================="
+    if (numTasks == 1) blur(src, dst, 0, src.height, radius)
+    else parBlurInternal(src, dst, src.height, numTasks, radius, blur _)
   }
-
-  
+    
 }

@@ -63,19 +63,46 @@ package object scalashop {
     rgba(avg(r), avg(g), avg(b), avg(a))
   }
 
-  def main(args: Array[String]): Unit = {
-    val width = 32
-    val numTasks = 5
+  def parBlurInternal(src: Img, dst: Img, matrixSize: Int, numTasks: Int, radius: Int, 
+      blurF: (Img, Img, Int, Int, Int) => Unit): Unit = {
+    // get the chunks interval for each parallel task
+    val chunks = getChunks(numTasks, matrixSize)
 
-    val isDivisor = width%numTasks == 0
-
-    val step = if (isDivisor) width/numTasks else width/numTasks + 1
-    val test = (0 to width) by step
-
-    Console println test.zip {
-      if (isDivisor) test.tail
-      else (test.tail ++ (width to width))
+    // schedule tasks for each chunk that will run into parallel thread
+    val tasks = chunks map {
+      case (from, end) => task {
+        blurF(src, dst, from, end, radius)
+      }
     }
 
+    // calculate the head in the current thread
+    tasks.head.get
+
+    // wait the asynchonous computation of the remaining ones
+    tasks.tail foreach { _.join() }
   }
+
+  def getChunks(numTasks: Int, matrixSize: Int) = {
+    // each column will be processed into separate task
+    if (numTasks > matrixSize) for (i <- 0 until matrixSize) yield (i, i+1)
+    // each task will process exactly the same column numbers (step value)
+    else if (matrixSize%numTasks == 0) {
+      val step = matrixSize / numTasks
+      val beginIndeces = (0 to matrixSize) by step
+      beginIndeces zip beginIndeces.tail
+    }
+    // if the numTaks in not divisor of matrix size, the first tasks (== remainder size) will process 
+    // one additional row/column besides the calculated step. The remaining ones (second list) will process 1 step
+    else {
+      val remainder = matrixSize % numTasks
+      val step = matrixSize / numTasks
+
+      val first = (0 to remainder) map (_ * (step + 1)) toList
+      val secondIdx = (remainder * (step + 1))
+      val second = (secondIdx to matrixSize) map (_ * step) toList
+
+      (first zip (first.tail)) ::: (second zip second.tail)
+    }
+  }
+
 }
