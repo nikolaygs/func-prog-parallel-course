@@ -43,7 +43,6 @@ object VerticalBoxBlur {
    *  bottom.
    */  
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-    Console println s"Blur -> from: ${from}, to: ${end}"
     for {
       x <- (from until end)
       y <- (0 until src.height)
@@ -57,6 +56,8 @@ object VerticalBoxBlur {
    *  columns.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
+    assert(numTasks > 0, "numTasks must be at least 1")
+
     val isDivisor = src.width%numTasks == 0
 
     val step = if (isDivisor) src.width/numTasks else src.width/numTasks + 1
@@ -66,17 +67,17 @@ object VerticalBoxBlur {
       if (isDivisor) beginIndeces.tail
       else (beginIndeces.tail ++ (src.width to src.width))
     }
-
+    
     // create task foreach chunk in the tail, the head will be executed in this thread
     val tasks = chunks.tail map {
       case (from, end) => task {
-        blur(src, dst, from, end - 1, radius)
+        blur(src, dst, from, end, radius)
       }
     }
 
     // compute the 'head' element in this thread
     val (from, end) = chunks.head 
-    blur(src, dst, from, end - 1, radius)
+    blur(src, dst, from, end, radius)
 
     // join the remaining tasks
     tasks foreach { _.join() }

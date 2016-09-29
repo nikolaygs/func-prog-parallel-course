@@ -42,7 +42,6 @@ object HorizontalBoxBlur {
    *  Within each row, `blur` traverses the pixels by going from left to right.
    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-    Console println s"Blur -> from: ${from}, to: ${end}"
     for {
       x <- (0 until src.width)
       y <- (from until end)
@@ -56,27 +55,27 @@ object HorizontalBoxBlur {
    *  rows.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
+    assert(numTasks > 0, "numTasks must be at least 1")
+
     val isDivisor = src.height % numTasks == 0
 
     val step = if (isDivisor) src.height / numTasks else src.height / numTasks + 1
     val beginIndeces = (0 to src.height) by step
     
-    Console println s"beginIndeces: ${beginIndeces}"
     val chunks = beginIndeces zip {
       if (isDivisor) beginIndeces.tail
       else (beginIndeces.tail ++ (src.height to src.height))
     }
 
-    Console println s"CHUNKS: ${chunks}"
     val tasks = chunks.tail map {
       case (from, end) => task {
-        blur(src, dst, from, end - 1, radius)
+        blur(src, dst, from, end, radius)
       }
     }
 
     // compute the 'head' element in this thread
     val (from, end) = chunks.head 
-    blur(src, dst, from, end - 1, radius)
+    blur(src, dst, from, end, radius)
 
     // join the remaining ones
     tasks foreach { _.join() }

@@ -49,10 +49,7 @@ package object scalashop {
       for {
         x <- (minX to maxX)
         y <- (minY to maxY) 
-      } yield {
-        Console println s"(${x}, ${y})"
-        src(x, y)
-      }
+      } yield src(x, y)
 
     // get the cumulative value of each rgba element for the selected pixels 
     val (r, g, b, a) = pixelsRGBA.foldLeft(0, 0, 0, 0) { 
