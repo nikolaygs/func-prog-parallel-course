@@ -59,21 +59,6 @@ object VerticalBoxBlur {
     else parBlurInternal(src, dst, src.width, numTasks, radius, blur _)
   }
 
-//  def parBlurInternal(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-//    val chunks = getChunks(numTasks, src.width)
-//
-//    // schedule tasks for each chunk that will run into parallel thread
-//    val tasks = chunks map {
-//      case (from, end) => task {
-//        blur(src, dst, from, end, radius)
-//      }
-//    }
-//
-//    tasks.head.get
-//    
-//    tasks.tail foreach { _.join() }
-//  }
-
   def main(args: Array[String]): Unit = {
     Console println (getChunks(10, 9) toList)
     Console println (getChunks(10, 10) toList)

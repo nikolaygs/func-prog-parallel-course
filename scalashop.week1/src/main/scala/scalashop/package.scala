@@ -78,7 +78,7 @@ package object scalashop {
     // calculate the head in the current thread
     tasks.head.get
 
-    // wait the asynchonous computation of the remaining ones
+    // wait the asynchronous computation of the remaining ones
     tasks.tail foreach { _.join() }
   }
 

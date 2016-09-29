@@ -430,37 +430,30 @@ class BlurSuite extends FunSuite {
     check(3, 2, 6)
   }
 
-//  test("HorizontalBoxBlur.parBlur with 32 tasks should execute 32 parallel tasks for a 64x32 image, each blurring one strip") {
-//    val w = 63
-//    val h = 64
-//    val src = new Img(w, h)
-//    val dst = new Img(w, h)
-////    src(0, 0) = 0; src(1, 0) = 1; src(2, 0) = 2; src(3, 0) = 9
-////    src(0, 1) = 3; src(1, 1) = 4; src(2, 1) = 5; src(3, 1) = 10
-////    src(0, 2) = 6; src(1, 2) = 7; src(2, 2) = 8; src(3, 2) = 11
-//
-//    Console println "==============================================="
-//    VerticalBoxBlur parBlur (src, dst, 32, 1)
-//    Console println "==============================================="
-////    HorizontalBoxBlur.parBlur(src, dst, 32, 1)
-////    Console println "==============================================="
-////    HorizontalBoxBlur.parBlur(new Img(h, w), new Img(h, w), 32, 1)
-//
-//    def check(x: Int, y: Int, expected: Int) =
-//      assert(dst(x, y) == expected,
-//        s"(destination($x, $y) should be $expected)")
-//
-//    check(0, 0, 4)
-//    check(1, 0, 5)
-//    check(2, 0, 5)
-//    check(3, 0, 6)
-//    check(0, 1, 4)
-//    check(1, 1, 5)
-//    check(2, 1, 5)
-//    check(3, 1, 6)
-//    check(0, 2, 4)
-//    check(1, 2, 5)
-//    check(2, 2, 5)
-//    check(3, 2, 6)
-//  }
+  test("getChunks numsOfTasks == width/height") {
+    val size, numsOfTasks = 10
+    val expected = List((0,1), (1,2), (2,3), (3,4), (4,5), (5,6), (6,7), (7,8), (8,9), (9,10))
+    val result = getChunks(numsOfTasks, size)
+    
+    assert(result == expected)
+  }
+
+  test("getChunks numsOfTasks > width/height") {
+    val size = 9
+    val numsOfTasks = 10
+    val expected = List((0,1), (1,2), (2,3), (3,4), (4,5), (5,6), (6,7), (7,8), (8,9))
+    val result = getChunks(numsOfTasks, size)
+    
+    assert(result == expected)
+  }
+
+  test("getChunks numsOfTasks < width/height") {
+    val size = 11
+    val numsOfTasks = 10
+    val expected = List((0,2), (2,3), (3,4), (4,5), (5,6), (6,7), (7,8), (8,9), (9,10), (10,11))
+    val result = getChunks(numsOfTasks, size)
+    
+    assert(result == expected)
+  }
+
 }
