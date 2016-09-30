@@ -73,6 +73,29 @@ object ParallelParenthesesBalancing {
     else rec(chars.tail, updateCount(chars.head, count._1, count._2))
   }
 
+  def delta(a: Int, b: Int) = {
+    if (a > b) a - b else b - a
+  }
+  
+  type Brackets = (Int, Int)
+  def opened(b: Brackets) = b._1
+  def closed(b: Brackets) = b._2
+  
+  def combine(left: (Int, Int), right: (Int, Int)) = {
+    val (leftOpen, leftClosed) = left
+    val (rightOpen, rightClosed) = right
+
+    if (leftOpen >= rightClosed) {
+      val remainOpen = (leftOpen - rightClosed + rightOpen)
+      val remainClosed = leftClosed
+      (remainOpen, remainClosed)
+    } else {
+      val remainOpen = rightOpen
+      val remainClosed = (rightClosed - leftOpen + leftClosed)
+      (remainOpen, remainClosed)
+    }
+  }
+  
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
@@ -81,19 +104,20 @@ object ParallelParenthesesBalancing {
       rec(chars.slice(idx, until), (0, 0))
     }
 
-    def reduce(from: Int, until: Int): Boolean = {
+    def reduce(from: Int, until: Int): (Int, Int) = {
       if (until - from <= threshold)
         traverse(from, until, 0, 0)
       else {
-        val mid = (until - from) / from
+        val mid = (until + from) / 2
         val (left, right) = parallel(
             traverse(from, mid, 0, 0), 
             traverse(mid, until, 0, 0))
+         
+         combine(left, right)
       }
-      ???
     }
 
-    reduce(0, chars.length) == true
+    reduce(0, chars.length) == (0, 0)
   }
 
   // For those who want more:
