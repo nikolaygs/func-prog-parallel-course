@@ -63,5 +63,52 @@ class ParallelCountChangeSuite extends FunSuite {
     check(250, List(1, 2, 5, 10, 20, 50), 177863)
   }
 
+  test("parCountChange without threshold should execute sequentially") {
+    val noThreshold = (a: Int, b: List[Int]) => true
 
+    def check(money: Int, coins: List[Int], expected: Int) =
+      assert(parCountChange(money, coins, noThreshold) == expected,
+        s"countChange($money, $coins) should be $expected")
+
+    check(50, List(1, 2, 5, 10), 341)
+    check(250, List(1, 2, 5, 10, 20, 50), 177863)
+  }
+
+  test("parCountChange with threshold should execute completely in parallel") {
+    val noThreshold = (a: Int, b: List[Int]) => false
+
+    def check(money: Int, coins: List[Int], expected: Int) =
+      assert(parCountChange(money, coins, noThreshold) == expected,
+        s"countChange($money, $coins) should be $expected")
+
+    check(50, List(1, 2, 5, 10), 341)
+    check(250, List(1, 2, 5, 10, 20, 50), 177863)
+  }
+
+  test("parCountChange with moneyThreshold") {
+    def check(money: Int, coins: List[Int], expected: Int) =
+      assert(parCountChange(money, coins, moneyThreshold(money)) == expected,
+        s"countChange($money, $coins) should be $expected")
+
+    check(50, List(1, 2, 5, 10), 341)
+    check(250, List(1, 2, 5, 10, 20, 50), 177863)
+  }
+
+  test("parCountChange with number of coins threshold") {
+    def check(money: Int, coins: List[Int], expected: Int) =
+      assert(parCountChange(money, coins, totalCoinsThreshold(coins.size)) == expected,
+        s"countChange($money, $coins) should be $expected")
+
+    check(50, List(1, 2, 5, 10), 341)
+    check(250, List(1, 2, 5, 10, 20, 50), 177863)
+  }
+
+  test("parCountChange with combined threshold") {
+    def check(money: Int, coins: List[Int], expected: Int) =
+      assert(parCountChange(money, coins, totalCoinsThreshold(coins.size)) == expected,
+        s"countChange($money, $coins) should be $expected")
+
+    check(50, List(1, 2, 5, 10), 341)
+    check(250, List(1, 2, 5, 10, 20, 50), 177863)
+  }
 }
