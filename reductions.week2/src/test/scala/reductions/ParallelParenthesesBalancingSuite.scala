@@ -117,43 +117,43 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
   }
 
   test("test balance parallel 100000000 records") {
-    val bigSize = 1000000
-    val input = new Array[Char](bigSize)
+    val bigSize = 50000
+    val successInput = new Array[Char](bigSize)
+    val failureInput = new Array[Char](bigSize)
 
     var i = 0
     while (i < bigSize) {
-      val char = if (i%2 == 0) '(' else ')'
-        input(i) = char
-        i = i + 1
+      successInput(i) = if (i%2 == 0) '(' else ')'
+      failureInput(i) = if (i%2 == 0) ')' else '('
+      i = i + 1
     }
 
-    Console println "Char array initialized"
-    
     def check(input: Array[Char], expected: Boolean) =
-      assert(parBalance(input, 5000) == expected,
+      assert(parBalance(input, 1000) == expected,
         s"balance($input) should be $expected")
 
-    check(input, true)
+    check(successInput, true)
+    check(failureInput, false)
   }
 
   test("test balance sequential 100000000 records") {
     val bigSize = 50000
-    val input = new Array[Char](bigSize)
+    val successInput = new Array[Char](bigSize)
+    val failureInput = new Array[Char](bigSize)
 
     var i = 0
     while (i < bigSize) {
-      val char = if (i%2 == 0) '(' else ')'
-        input(i) = char
-        i = i + 1
+      successInput(i) = if (i%2 == 0) '(' else ')'
+      failureInput(i) = if (i%2 == 0) ')' else '('
+      i = i + 1
     }
 
-    Console println "Char array initialized"
-    
     def check(input: Array[Char], expected: Boolean) =
       assert(balance(input) == expected,
         s"balance($input) should be $expected")
 
-    check(input, true)
+    check(successInput, true)
+    check(failureInput, false)
   }
 
 }

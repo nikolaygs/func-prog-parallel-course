@@ -41,24 +41,10 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def balance(chars: Array[Char]): Boolean = {
-    def updateCount(char: Char, count: Int) = 
-      if (char == '(') count + 1
-      else if (char == ')') count - 1
-      else count
-
-    @tailrec
-    def rec(chars: Array[Char], count: Int): Boolean = {
-      if (chars.isEmpty) count == 0
-      else {
-        if (count < 0) false
-        else rec(chars.tail, updateCount(chars.head, count))
-      }
-    }
-
-    rec(chars, 0)
+    rec(chars, (0, 0)) == (0, 0)
   }
 
-  def updateCount(char: Char, openCount: Int, closedCount: Int): (Int, Int) = 
+  def getBracketsCount(char: Char, openCount: Int, closedCount: Int): (Int, Int) = 
     if (char == '(')
       (openCount + 1, closedCount)
     else if (char == ')')
@@ -70,17 +56,9 @@ object ParallelParenthesesBalancing {
   @tailrec
   def rec(chars: Array[Char], count: (Int, Int)): (Int, Int) = {
     if (chars.isEmpty) count
-    else rec(chars.tail, updateCount(chars.head, count._1, count._2))
+    else rec(chars.tail, getBracketsCount(chars.head, count._1, count._2))
   }
 
-  def delta(a: Int, b: Int) = {
-    if (a > b) a - b else b - a
-  }
-  
-  type Brackets = (Int, Int)
-  def opened(b: Brackets) = b._1
-  def closed(b: Brackets) = b._2
-  
   def combine(left: (Int, Int), right: (Int, Int)) = {
     val (leftOpen, leftClosed) = left
     val (rightOpen, rightClosed) = right
