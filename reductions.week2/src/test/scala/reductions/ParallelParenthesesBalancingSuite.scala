@@ -45,5 +45,29 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
     check(").", false)
   }
 
+  test("test updateCount") {
+    def check(input: String, expected: (Int, Int)) =
+      assert(rec(input.toCharArray, (0, 0)) == expected,
+        s"balance($input) should be $expected")
+
+    check("()", (0, 0))
+    check(")(", (1, 1))
+    check("((", (2, 0))
+    check("))", (0, 2))
+    check(".)", (0, 1))
+    check(".(", (1, 0))
+    check("(.", (1, 0))
+    check(").", (0, 1))
+    check("((()))", (0, 0))
+    check("((())))", (0, 1))
+    check("(((()))", (1, 0))
+
+//    check("((", false)
+//    check("))", false)
+//    check(".)", false)
+//    check(".(", false)
+//    check("(.", false)
+//    check(").", false)
+  }
 
 }
