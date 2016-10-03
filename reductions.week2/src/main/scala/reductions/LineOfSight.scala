@@ -35,22 +35,22 @@ object LineOfSight {
   def max(a: Float, b: Float): Float = if (a > b) a else b
 
   def lineOfSight(input: Array[Float], output: Array[Float], maxAngle: Float = 0): Unit =
-    lineOfSightInt(input, 0, input.size, output, maxAngle)
+    lineOfSightInt(input, output, 0, input.size, maxAngle)
 
-  private def lineOfSightInt(input: Array[Float], from: Int, until: Int,
-      output: Array[Float], maxAngle: Float = 0): Unit = {
+  private def lineOfSightInt(input: Array[Float], output: Array[Float], from: Int, 
+      until: Int, maxAngle: Float = 0): Unit = {
     if (until - from == 0)
       return
 
     // output(0) should always be '0'
     var i = if (from > 0) from else {output(0) = 0; 1}
-    var max = 0f
+    var max = maxAngle
 
     while (i < until) {
       val tangent = (input(i) / i)
       if (tangent > max) max = tangent
 
-      output(i - from) = max
+      output(i) = max
       i = i + 1
     }
   }
@@ -68,15 +68,15 @@ object LineOfSight {
   /** Traverses the specified part of the array and returns the maximum angle.
    */
   def upsweepSequential(input: Array[Float], from: Int, until: Int): Float = {
-    val output = new Array[Float](until-from)
-    lineOfSightInt(input, from, until, output)
+    val output = new Array[Float](input.size)
+    lineOfSightInt(input, output, from, until)
 
     @tailrec
     def findMax(output: Array[Float], from: Int, until: Int, currentMax: Float): Float = {
       if (from == until) currentMax
       else {
-        val max = if (output(from) > currentMax) output(from) else currentMax
-        findMax(output, from+1, until, max)
+        val newMax = max(output(from), currentMax)
+        findMax(output, from+1, until, newMax)
       }
     }
 
@@ -91,8 +91,7 @@ object LineOfSight {
    *  If the specified part of the array is longer than `threshold`, then the
    *  work is divided and done recursively in parallel.
    */
-  def upsweep(input: Array[Float], from: Int, end: Int,
-    threshold: Int): Tree = {
+  def upsweep(input: Array[Float], from: Int, end: Int, threshold: Int): Tree = {
     if (end - from <= threshold)
       Leaf(from, end, upsweepSequential(input, from, end))
     else {
@@ -112,27 +111,31 @@ object LineOfSight {
    */
   def downsweepSequential(input: Array[Float], output: Array[Float],
     startingAngle: Float, from: Int, until: Int): Unit = {
-    lineOfSight(input, output, startingAngle)
+    if (from >= until) 
+      return
+    else 
+      lineOfSightInt(input, output, from, until, startingAngle)
   }
 
   /** Pushes the maximum angle in the prefix of the array to each leaf of the
    *  reduction `tree` in parallel, and then calls `downsweepTraverse` to write
    *  the `output` angles.
    */
-  def downsweep(input: Array[Float], output: Array[Float], startingAngle: Float,
-    tree: Tree): Unit = tree match {
-    case Leaf(from, until, maxPrevious) => downsweepSequential(input, output, maxPrevious, from, until)
-    case Node(left, right) => {
+  def downsweep(input: Array[Float], output: Array[Float], startingAngle: Float, tree: Tree): Unit = tree match {
+    case Leaf(from, until, maxPrevious) => {
+      downsweepSequential(input, output, startingAngle, from, until)
+    }
+    case x: Node => {
       parallel(
-          downsweep(input, output, startingAngle, left),
-          downsweep(input, output, startingAngle, right))
+        downsweep(input, output, x.maxPrevious, x.left),
+        downsweep(input, output, x.maxPrevious, x.right))
     }
   }
 
   /** Compute the line-of-sight in parallel. */
   def parLineOfSight(input: Array[Float], output: Array[Float],
     threshold: Int): Unit = {
-    val from = 0
+    val from = 1
     val end = input.size
 
     val resTree = upsweep(input, from, end, threshold)
