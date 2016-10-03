@@ -40,7 +40,28 @@ class LineOfSightSuite extends FunSuite {
     assert(output.toList == List(0f, 1f, 4f, 4f))
   }
 
+  test("downsweepSequential with from >= until") {
+    val output = new Array[Float](4)
+    downsweepSequential(Array[Float](0f, 1f, 8f, 9f), output, 0f, 4, 4)
+    assert(output.toList == List(0f, 0f, 0f, 0f))
+  }
+
+  test("downsweepSequential should correctly handle a chunk of size 2 of an input array of size 5") {
+    val output = new Array[Float](5)
+    downsweepSequential(Array[Float](0f, 7f, 10f, 33f, 48f), output, 0f, 2, 4)
+    assert(output.toList == List(0.0, 0.0, 5.0, 11.0, 0.0))
+  }
+
   test("downsweepSequential (threshold = 1) should correctly handle a 4 element array when the starting angle is zero") {
+    val input = Array[Float](0f, 1f, 8f, 9f)
+    val output = new Array[Float](4)
+    val tree = upsweep(input, 0, input.size, 10)
+    val result = downsweepSequential(input, output, 1, 0, input.size)
+
+    assert(output.toList == List(0f, 1f, 4f, 4f))
+  }
+
+  test("downsweep should correctly compute the output for a non-zero starting angle") {
     val input = Array[Float](0f, 1f, 8f, 9f)
     val output = new Array[Float](4)
     val tree = upsweep(input, 0, input.size, 10)
