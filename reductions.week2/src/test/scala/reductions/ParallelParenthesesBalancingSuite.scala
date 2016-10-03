@@ -47,7 +47,7 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
 
   test("test updateCount") {
     def check(input: String, expected: (Int, Int)) =
-      assert(rec(input.toCharArray, (0, 0)) == expected,
+      assert(rec(input.toCharArray, 0, input.length, (0, 0)) == expected,
         s"balance($input) should be $expected")
 
     check("()", (0, 0))
@@ -117,7 +117,7 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
   }
 
   test("test balance parallel 100000000 records") {
-    val bigSize = 50000
+    val bigSize = 100000
     val successInput = new Array[Char](bigSize)
     val failureInput = new Array[Char](bigSize)
 
@@ -129,7 +129,7 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
     }
 
     def check(input: Array[Char], expected: Boolean) =
-      assert(parBalance(input, 1000) == expected,
+      assert(parBalance(input, 10000) == expected,
         s"balance($input) should be $expected")
 
     check(successInput, true)
@@ -137,7 +137,7 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
   }
 
   test("test balance sequential 100000000 records") {
-    val bigSize = 50000
+    val bigSize = 100000
     val successInput = new Array[Char](bigSize)
     val failureInput = new Array[Char](bigSize)
 

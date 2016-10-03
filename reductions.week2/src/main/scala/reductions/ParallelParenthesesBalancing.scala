@@ -41,7 +41,7 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def balance(chars: Array[Char]): Boolean = {
-    rec(chars, (0, 0)) == (0, 0)
+    rec(chars, 0, chars.size, (0, 0)) == (0, 0)
   }
 
   def getBracketsCount(char: Char, openCount: Int, closedCount: Int): (Int, Int) = 
@@ -54,9 +54,11 @@ object ParallelParenthesesBalancing {
       (openCount, closedCount)
 
   @tailrec
-  def rec(chars: Array[Char], count: (Int, Int)): (Int, Int) = {
-    if (chars.isEmpty) count
-    else rec(chars.tail, getBracketsCount(chars.head, count._1, count._2))
+  def rec(chars: Array[Char], idx: Int, until: Int, count: (Int, Int)): (Int, Int) = {
+    if (idx >= until) count
+    else {
+      rec(chars, idx+1, until, getBracketsCount(chars(idx), count._1, count._2))
+    }
   }
 
   def combine(left: (Int, Int), right: (Int, Int)) = {
@@ -79,7 +81,7 @@ object ParallelParenthesesBalancing {
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
 
     def traverse(idx: Int, until: Int, arg1: Int, arg2: Int): (Int, Int) = {
-      rec(chars.slice(idx, until), (0, 0))
+      rec(chars, idx, until, (0, 0))
     }
 
     def reduce(from: Int, until: Int): (Int, Int) = {
