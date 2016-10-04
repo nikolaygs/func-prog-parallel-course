@@ -61,15 +61,25 @@ class LineOfSightSuite extends FunSuite {
     assert(output.toList == List(0f, 1f, 4f, 4f))
   }
 
-  test("downsweep should correctly compute the output for a non-zero starting angle") {
-    val input = Array[Float](0f, 1f, 8f, 9f)
-    val output = new Array[Float](4)
-    val tree = upsweep(input, 0, input.size, 10)
-    val result = downsweepSequential(input, output, 1, 0, input.size)
+  test("downsweep should correctly compute the output for a tree with 4 leaves when the starting angle is zero") {
+    val input = Array[Float](0f, 7f, 5f, 33f, 48f)
+    val output = new Array[Float](5)
+    val tree = upsweep(input, 0, input.size, 3)
+    Console println s"TREE: ${tree}"
+    val result = downsweep(input, output, 0, tree)
 
-    assert(output.toList == List(0f, 1f, 4f, 4f))
+    assert(output.toList == List(0.0, 7.0, 7.0, 11.0, 12.0))
   }
+  
+  test("downsweep should correctly compute the output for a non-zero starting angle") {
+    val input = Array[Float](0f, 7f, 5f, 33f, 48f)
+    val output = new Array[Float](5)
+    val tree = upsweep(input, 0, input.size, 10)
+    val result = downsweep(input, output, 8, tree)
 
+    assert(output.toList == List(0.0, 8.0, 8.0, 11.0, 12.0))
+  }
+  
   test("parLineOfSight (threshold = 10) should correctly handle a 4 element array when the starting angle is zero") {
     val input = Array[Float](0f, 1f, 8f, 9f)
     val output = new Array[Float](4)
@@ -81,9 +91,17 @@ class LineOfSightSuite extends FunSuite {
   test("parLineOfSight (threshold = 1) should correctly handle a 4 element array when the starting angle is zero") {
     val input = Array[Float](0f, 1f, 8f, 9f)
     val output = new Array[Float](4)
-    parLineOfSight(input, output, 1)
+    parLineOfSight(input, output, 2)
 
     assert(output.toList == List(0f, 1f, 4f, 4f))
+  }
+
+  test("parLineOfSight should correctly compute the output for threshold 2") {
+    val input = Array[Float](0f, 7f, 3f, 33f, 48f)
+    val output = new Array[Float](5)
+    parLineOfSight(input, output, 2)
+
+    assert(output.toList == List(0.0, 7.0, 7.0, 11.0, 12.0))
   }
 
 }
