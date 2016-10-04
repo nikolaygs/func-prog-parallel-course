@@ -127,8 +127,8 @@ object LineOfSight {
     }
     case x: Node => {
       parallel(
-        downsweep(input, output, x.maxPrevious, x.left),
-        downsweep(input, output, x.maxPrevious, x.right))
+        downsweep(input, output, startingAngle, x.left),
+        downsweep(input, output, max(startingAngle, x.left.maxPrevious), x.right))
     }
   }
 
