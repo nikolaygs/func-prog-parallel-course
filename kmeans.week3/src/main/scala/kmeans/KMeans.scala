@@ -61,16 +61,38 @@ class KMeans {
   }
 
   def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
-    ???
+    oldMeans map { oldMean =>
+      findAverage(oldMean, classified(oldMean)) 
+    } toSeq
   }
 
+  // The algorithm converged iff the square distance between the old and the 
+  // new mean is less than or equal to eta, for all means.
   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    ???
+    if (oldMeans.isEmpty || newMeans.isEmpty || oldMeans.size != newMeans.size)
+      return true
+
+    // compare two corresponding (old and new) means
+    def hasConverged(oldM: Point, newM: Point) = (oldM.squareDistance(newM) <= eta)
+
+    // If some of the means converges - return true
+    for {
+      i <- 0 until oldMeans.length
+      if (hasConverged(oldMeans(i), newMeans(i)))
+    } yield {
+      return true 
+    }
+
+    false
   }
 
   @tailrec
   final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
-    if (???) kMeans(???, ???, ???) else ??? // your implementation need to be tail recursive
+    val classified = classify(points, means)
+    val updatedMeans = update(classified, means)
+
+    if (converged(eta)(means, updatedMeans)) updatedMeans
+    else kMeans(points, updatedMeans, eta) 
   }
 }
 
@@ -95,12 +117,12 @@ object KMeansRunner {
     Key.exec.maxWarmupRuns -> 40,
     Key.exec.benchRuns -> 25,
     Key.verbose -> true
-  ) withWarmer(new Warmer.Default)
+  ) //withWarmer(new Warmer.Default)
 
-  def main(args: Array[String]) {
+  def main1(args: Array[String]) {
     val kMeans = new KMeans()
 
-    val numPoints = 500000
+    val numPoints = 500//000
     val eta = 0.01
     val k = 32
     val points = kMeans.generatePoints(k, numPoints)
@@ -120,4 +142,14 @@ object KMeansRunner {
     println(s"speedup: ${seqtime / partime}")
   }
 
+  def main(args: Array[String]): Unit = {
+    
+    (for {
+      i <- 1 to 10
+      if (i>10)
+    } yield i) foreach {
+      println _
+    }
+
+  }
 }
