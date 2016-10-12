@@ -116,7 +116,7 @@ object KMeansRunner {
     Key.verbose -> true
   ) withWarmer(new Warmer.Default)
 
-  def main1(args: Array[String]) {
+  def main(args: Array[String]) {
     val kMeans = new KMeans()
 
     val numPoints = 500000
@@ -137,16 +137,5 @@ object KMeansRunner {
     }
     println(s"parallel time: $partime ms")
     println(s"speedup: ${seqtime / partime}")
-  }
-
-  def main(args: Array[String]): Unit = {
-    
-    (for {
-      i <- 1 to 10
-      if (i>10)
-    } yield i) foreach {
-      println _
-    }
-
   }
 }
