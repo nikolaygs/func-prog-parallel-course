@@ -71,7 +71,23 @@ class KMeansSuite extends FunSuite {
     checkParClassify(points, means, expected)
   }
 
-}
-
-
+  test("'converged' should work for empty oldMeans and empty newMeans") {
+    val eta = 0.01
+    val result = converged(eta)(Nil, Nil)
+    
+    assert(result == true)
+  }
   
+  test("'kMeans' should work for 'points' == GenSeq((0, 0, 1), (0,0, -1), (0,1,0), (0,10,0)) and 'oldMeans' == GenSeq((0, -1, 0), (0, 2, 0)) and 'eta' == 12.25") {
+    val points = GenSeq(new Point(0, 0, 1), new Point(0,0, -1), new Point(0,1,0), new Point(0,10,0))
+    val oldMeans = GenSeq(new Point(0, -1, 0), new Point(0, 2, 0))
+    val eta = 12.25
+    
+    val result = kMeans(points, oldMeans, eta) map { point =>
+      (point.x, point.y, point.z)
+    } toList
+
+    val expected = List((0.0, 0.0, 0.0), (0.0, 5.5, 0.0))
+    assert(result == expected)
+  }
+}
