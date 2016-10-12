@@ -69,23 +69,20 @@ class KMeans {
   // The algorithm converged iff the square distance between the old and the 
   // new mean is less than or equal to eta, for all means.
   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    if (oldMeans.isEmpty || newMeans.isEmpty || oldMeans.size != newMeans.size)
-      return true
-
-    // compare two corresponding (old and new) means
-    def hasConverged(oldM: Point, newM: Point) = (oldM.squareDistance(newM) <= eta)
-
-    // If some of the means converges - return true
+    // If any of the means converge return false
     for {
       i <- 0 until oldMeans.length
-      if (hasConverged(oldMeans(i), newMeans(i)))
+      if ((oldMeans(i) squareDistance newMeans(i)) <= eta)
     } yield {
-      return true 
+      return false 
     }
 
-    false
+    // If none of the means converged return true
+    true
   }
 
+  // if the algorithm converged return the current update means 
+  // either improve the means recursively
   @tailrec
   final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
     val classified = classify(points, means)
@@ -117,12 +114,12 @@ object KMeansRunner {
     Key.exec.maxWarmupRuns -> 40,
     Key.exec.benchRuns -> 25,
     Key.verbose -> true
-  ) //withWarmer(new Warmer.Default)
+  ) withWarmer(new Warmer.Default)
 
   def main1(args: Array[String]) {
     val kMeans = new KMeans()
 
-    val numPoints = 500//000
+    val numPoints = 500000
     val eta = 0.01
     val k = 32
     val points = kMeans.generatePoints(k, numPoints)
