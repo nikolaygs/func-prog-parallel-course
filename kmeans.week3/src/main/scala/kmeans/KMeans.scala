@@ -44,7 +44,7 @@ class KMeans {
 
   def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = 
     if (points.isEmpty)
-      means map (mean => (mean, points)) toMap
+      means map ((_, points)) toMap
     else 
       points groupBy (findClosest(_, means))
 
@@ -72,7 +72,7 @@ class KMeans {
     // If any of the means converge return false
     for {
       i <- 0 until oldMeans.length
-      if ((oldMeans(i) squareDistance newMeans(i)) <= eta)
+      if (oldMeans(i) squareDistance newMeans(i)) <= eta
     } yield {
       return false 
     }
