@@ -198,13 +198,13 @@ package object barneshut {
       // Find the x slot of the point in the buffer matrix
       val x = 
         if (b.x < boundaries.minX) 0
-        else if (b.x > boundaries.maxX) sectorPrecision
+        else if (b.x >= boundaries.maxX) sectorPrecision - 1
         else (b.x - boundaries.minX) / sectorSize toInt
 
       // Find the y slot of the point in the buffer matrix
       val y = 
         if (b.y < boundaries.minY) 0
-        else if (b.y > boundaries.maxY) sectorPrecision
+        else if (b.y >= boundaries.maxY) sectorPrecision - 1
         else (b.y - boundaries.minY) / sectorSize toInt
 
       // we use array so we have to shift with 'y' in order to find the correct slot
