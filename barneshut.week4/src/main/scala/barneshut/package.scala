@@ -195,14 +195,34 @@ package object barneshut {
     for (i <- 0 until matrix.length) matrix(i) = new ConcBuffer
 
     def +=(b: Body): SectorMatrix = {
-      ???
+      // Find the x slot of the point in the buffer matrix
+      val x = 
+        if (b.x < boundaries.minX) 0
+        else if (b.x > boundaries.maxX) sectorPrecision
+        else (b.x - boundaries.minX) / sectorSize toInt
+
+      // Find the y slot of the point in the buffer matrix
+      val y = 
+        if (b.y < boundaries.minY) 0
+        else if (b.y > boundaries.maxY) sectorPrecision
+        else (b.y - boundaries.minY) / sectorSize toInt
+
+      // we use array so we have to shift with 'y' in order to find the correct slot
+      val bucketIdx = (x + y * sectorPrecision)
+      matrix(bucketIdx) += b
+
       this
     }
 
     def apply(x: Int, y: Int) = matrix(y * sectorPrecision + x)
 
     def combine(that: SectorMatrix): SectorMatrix = {
-      ???
+      val result = new SectorMatrix(boundaries, sectorPrecision)
+      for (i <- 0 until this.matrix.size) {
+        result matrix(i) = this matrix(i) combine (that matrix(i))
+      }
+ 
+      result
     }
 
     def toQuad(parallelism: Int): Quad = {
