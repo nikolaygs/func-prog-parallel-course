@@ -22,7 +22,7 @@ package object barneshut {
 
     def centerY = minY + height / 2
 
-    override def toString = s"Boundaries($minX, $minY, $maxX, $maxY)"
+    override def toString = s"Boundaries ($minX, $minY, $maxX, $maxY)"
   }
 
   sealed abstract class Quad {
@@ -44,35 +44,71 @@ package object barneshut {
   }
 
   case class Empty(centerX: Float, centerY: Float, size: Float) extends Quad {
-    def massX: Float = ???
-    def massY: Float = ???
-    def mass: Float = ???
-    def total: Int = ???
-    def insert(b: Body): Quad = ???
+    def massX: Float = centerX
+    def massY: Float = centerY
+    def mass: Float = 0
+    def total: Int = 0
+    def insert(b: Body): Quad = Leaf(centerX, centerY, size, Seq(b))
   }
 
   case class Fork(
     nw: Quad, ne: Quad, sw: Quad, se: Quad
   ) extends Quad {
-    val centerX: Float = ???
-    val centerY: Float = ???
-    val size: Float = ???
-    val mass: Float = ???
-    val massX: Float = ???
-    val massY: Float = ???
-    val total: Int = ???
+    val centerX: Float = nw.centerX + nw.size/2 // bottommost point
+    val centerY: Float = nw.centerY + nw.size/2 // rightmost point
+    val size: Float = nw.size + ne.size
+    val mass: Float = nw.mass + ne.mass + sw.mass + se.mass
+    val massX: Float = this match {
+      case Fork(_: Empty, _: Empty, _: Empty, _: Empty) => centerX
+      case _ => (nw.mass * nw.massX + ne.mass * ne.massX + sw.mass * sw.massX + se.mass * se.massX) / mass
+    }
+
+    val massY: Float = this match {
+      case Fork(_: Empty, _: Empty, _: Empty, _: Empty) => centerY
+      case _ => (nw.mass * nw.massY + ne.mass * ne.massY + sw.mass * sw.massY + se.mass * se.massY) / mass
+    }
+
+    val total: Int = nw.total + ne.total + sw.total + se.total
 
     def insert(b: Body): Fork = {
-      ???
+      // find in which quadrand to insert the body
+      if (centerX < b.x && centerY < b.y) 
+        Fork(nw insert b, ne, sw, se)
+      else if (centerX > b.x && centerY < b.y)
+        Fork(nw, ne insert b, sw, se)
+      else if (centerX < b.x && centerY > b.y) 
+        Fork(nw, ne, sw insert b, se)
+      else 
+        Fork(nw, ne, sw, se insert b)
     }
   }
 
   case class Leaf(centerX: Float, centerY: Float, size: Float, bodies: Seq[Body])
   extends Quad {
-    val (mass, massX, massY) = (??? : Float, ??? : Float, ??? : Float)
-    val total: Int = ???
-    def insert(b: Body): Quad = ???
-  }
+    val mass = bodies map(_.mass) reduce(_ + _)
+
+    val (massX, massY) = (
+        (bodies map (b => b.mass * b.x) reduce(_ + _)) / mass,
+        (bodies map (b => b.mass * b.y) reduce(_ + _)) / mass)
+
+    val total: Int = bodies.size
+
+    def insert(b: Body): Quad = 
+      if (size > minimumSize)  {
+        // The size of each sub-quadtree element = size of the leaf/2
+        // the center (x, y) is shifted with 1/4 of the leaf size depending of the quadrant possition
+        val quadSize = size / 2
+        val nw = Empty(centerX - quadSize/2, centerY - quadSize/2, quadSize)
+        val ne = Empty(centerX + quadSize/2, centerY - quadSize/2, quadSize)
+        val sw = Empty(centerX - quadSize/2, centerY + quadSize/2, quadSize)
+        val se = Empty(centerX + quadSize/2, centerY + quadSize/2, quadSize)
+
+        // create new fork with empty regions and insert the body
+        Fork(nw, ne, sw, se) insert b
+      } else { 
+        Leaf(centerX, centerY, size, bodies :+ b)
+      }
+    }
 
   def minimumSize = 0.00001f
 
@@ -123,9 +159,20 @@ package object barneshut {
           // no force
         case Leaf(_, _, _, bodies) =>
           // add force contribution of each body by calling addForce
-        case Fork(nw, ne, sw, se) =>
+          bodies foreach (b => addForce(b.mass, b.x, b.y))
+        case quad: Fork => {
           // see if node is far enough from the body,
           // or recursion is needed
+          val dist = distance(quad.massX, quad.massY, x, y)
+          if (quad.size / dist < theta) {
+            addForce(quad.mass, quad.massX, quad.massY)
+          } else {
+            traverse(quad.nw)
+            traverse(quad.ne)
+            traverse(quad.sw)
+            traverse(quad.se)
+          }
+        }
       }
 
       traverse(quad)
