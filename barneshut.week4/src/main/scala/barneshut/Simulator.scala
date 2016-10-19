@@ -26,7 +26,7 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
     result.minX = min(a.minX, b.minX)
     result.minY = min(a.minY, b.minY)
     result.maxX = max(a.maxX, b.maxX)
-    result.maxX = max(a.maxX, b.maxX)
+    result.maxY = max(a.maxY, b.maxY)
 
     result
   }
