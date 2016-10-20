@@ -72,11 +72,11 @@ package object barneshut {
 
     def insert(b: Body): Fork = {
       // find in which quadrand to insert the body
-      if (centerX < b.x && centerY < b.y) 
+      if (b.x <= centerX && b.y <= centerY) 
         Fork(nw insert b, ne, sw, se)
-      else if (centerX > b.x && centerY < b.y)
+      else if (b.x >= centerX && b.y <= centerY)
         Fork(nw, ne insert b, sw, se)
-      else if (centerX < b.x && centerY > b.y) 
+      else if (b.x <= centerX && b.y >= centerY) 
         Fork(nw, ne, sw insert b, se)
       else 
         Fork(nw, ne, sw, se insert b)
@@ -103,8 +103,13 @@ package object barneshut {
         val sw = Empty(centerX - quadSize/2, centerY + quadSize/2, quadSize)
         val se = Empty(centerX + quadSize/2, centerY + quadSize/2, quadSize)
 
-        // create new fork with empty regions and insert the body
-        Fork(nw, ne, sw, se) insert b
+        // create new fork with empty regions and insert all of the bodies from this leaf
+        val result = bodies.foldLeft(Fork(nw, ne, sw, se)) { (fork, b) =>
+          fork insert b
+        }
+
+        // insert the current body passed to the method
+        result insert b
       } else { 
         Leaf(centerX, centerY, size, bodies :+ b)
       }
