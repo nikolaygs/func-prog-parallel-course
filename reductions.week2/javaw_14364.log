@@ -1,6 +1,0 @@
----
-JVMX version - Jan 13 2015 17:39:01 - cons - optU - windows amd64 - 6 - bas2:231518 (mixed mode)
-Now: 2016-10-21 10:58:06, PID: 14364
-hostname: SOFN33974282A, current dir: C:\Users\I066469\func-prog-parallel-course\reductions.week2
----
-   :    [27660] 10:58:06    ***ERROR (:0): StackOverflowError
