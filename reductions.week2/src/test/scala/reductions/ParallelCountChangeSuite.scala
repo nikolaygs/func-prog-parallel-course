@@ -59,7 +59,7 @@ class ParallelCountChangeSuite extends FunSuite {
       assert(countChange(money, coins) == expected,
         s"countChange($money, $coins) should be $expected")
 
-    check(50, List(1, 2, 5, 10), 341)
+    check(50, List(10, 5, 2, 1), 341)
     check(250, List(1, 2, 5, 10, 20, 50), 177863)
   }
 

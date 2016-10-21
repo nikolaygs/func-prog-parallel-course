@@ -29,7 +29,8 @@ object ParallelCountChangeRunner {
       val fjtime = standardConfig measure {
         parResult = ParallelCountChange.parCountChange(amount, coins, threshold)
       }
-      println(s"parallel result = $parResult")
+
+      println(s"sequential count time: $seqtime ms")
       println(s"parallel count time: $fjtime ms")
       println(s"speedup: ${seqtime / fjtime}")
     }
@@ -46,33 +47,23 @@ object ParallelCountChange {
    *  coins for the specified amount of money.
    */
   def countChange(money: Int, coins: List[Int], threshold: Threshold = (a: Int, b: List[Int]) => true): Int = {
-
-    def sum(amount: Int, count: (Int, List[Int]) => Int, coins: List[Int]): Int = 
-      if (amount == 0) 1
-      else if (coins.isEmpty) 0
+    if (money == 0) 1
+    else if (coins.isEmpty || money < 0) 0
+    else {
+      val biggest = coins.head
+      val remainder = money  - biggest
+      if (remainder < 0) 0 + countChange(money, coins.tail)
+      else if (remainder == 0) 1 + countChange(money, coins.tail)
       else {
-        if (threshold(amount, coins))
-          count(amount, coins) + sum(amount, count, coins.tail)
-        else {
-          val (left, right) = parallel(count(amount, coins), sum(amount, count, coins.tail))
-          left + right
-        }
-      }
-
-    def count(amount: Int, coins: List[Int]): Int = {
-      if (amount < 0 || coins.isEmpty) 0
-      else {
-        val biggest = coins.head
-        val remainder = amount - biggest
-        if (remainder < 0) 0
-        else if (remainder == 0) 1
-        else sum(remainder, count, coins)
+        val (left, right) = 
+          if (threshold(money, coins)) 
+            (countChange(remainder, coins), countChange(money, coins.tail)) // sequential
+          else
+            parallel(countChange(remainder, coins), countChange(money, coins.tail)) // parallel
+          
+        left + right
       }
     }
-
-    val sortedCoins = if(!coins.isEmpty) coins.sortWith(_ > _)
-                      else Nil
-    sum(money, count, sortedCoins)
   }
 
   type Threshold = (Int, List[Int]) => Boolean
